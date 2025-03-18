@@ -1,5 +1,5 @@
-// Base URL for our API
-const API_URL = 'http://localhost:3000/api';
+// Base URL for our API - use current hostname instead of hardcoded localhost
+const API_URL = `${window.location.protocol}//${window.location.host}/api`;
 
 // Global state to store notes
 let allNotes = [];
