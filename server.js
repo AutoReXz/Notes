@@ -7,6 +7,7 @@ import { initModels } from './models/index.js';
 import noteRoutes from './routes/noteRoutes.js';
 import migrateCategories from './utils/migrate-categories.js';
 import { mysqlErrorMiddleware } from './utils/mysql-error-handler.js';
+import os from 'os'; // Add this import to get network interfaces
 
 // Load environment variables
 dotenv.config();
@@ -17,6 +18,7 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0'; // Listen on all interfaces by default
 
 // Middleware for logging requests
 app.use((req, res, next) => {
@@ -62,6 +64,23 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: err.message });
 });
 
+// Helper function to get server IP addresses
+function getServerIPs() {
+    const networkInterfaces = os.networkInterfaces();
+    const addresses = [];
+    
+    for (const interfaceName in networkInterfaces) {
+        for (const iface of networkInterfaces[interfaceName]) {
+            // Skip internal and non-ipv4 addresses
+            if (!iface.internal && iface.family === 'IPv4') {
+                addresses.push(iface.address);
+            }
+        }
+    }
+    
+    return addresses;
+}
+
 // Start server
 const startServer = async () => {
     try {
@@ -72,9 +91,23 @@ const startServer = async () => {
         // Run migration to update notes without categories
         await migrateCategories();
         
-        app.listen(PORT, () => {
-            console.log(`Server is running on http://localhost:${PORT}`);
-            console.log(`Connected to MySQL database on ${process.env.DB_HOST}`);
+        app.listen(PORT, HOST, () => {
+            console.log(`\n--- Server Information ---`);
+            console.log(`Server is running on http://${HOST}:${PORT}`);
+            console.log(`Local access: http://localhost:${PORT}`);
+            
+            // Display all IPs the server is accessible on
+            const ipAddresses = getServerIPs();
+            if (ipAddresses.length > 0) {
+                console.log('Available on network at:');
+                ipAddresses.forEach(ip => {
+                    console.log(`- http://${ip}:${PORT}`);
+                });
+            }
+            
+            console.log(`\nConnected to MySQL database on ${process.env.DB_HOST}`);
+            console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+            console.log(`---------------------------\n`);
         });
     } catch (error) {
         console.error('Unable to start the server:', error);

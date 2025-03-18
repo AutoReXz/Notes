@@ -14,7 +14,17 @@ const sequelize = new Sequelize({
     port: process.env.DB_PORT || 3306,
     logging: console.log, // Enable logging to see SQL queries
     dialectOptions: {
-        connectTimeout: 60000 // Increase connection timeout for cloud DB
+        connectTimeout: 60000, // Increase connection timeout for cloud DB
+        // Add SSL if running in production/cloud environment
+        ssl: process.env.NODE_ENV === 'production' ? {
+            rejectUnauthorized: true
+        } : null
+    },
+    pool: {
+        max: 5, // Maximum number of connection in pool
+        min: 0, // Minimum number of connection in pool
+        acquire: 60000, // The maximum time, in milliseconds, that pool will try to get connection before throwing error
+        idle: 10000 // The maximum time, in milliseconds, that a connection can be idle before being released
     }
 });
 
