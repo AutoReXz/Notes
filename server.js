@@ -20,12 +20,16 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0'; // Listen on all interfaces by default
 
-// Enhanced CORS configuration to allow requests from any VM
+// Enhanced CORS configuration to allow requests from any VM or local client
 app.use(cors({
   origin: '*', // Allow all origins
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
+
+// Add OPTIONS pre-flight handling for all routes
+app.options('*', cors());
 
 // Middleware for logging requests
 app.use((req, res, next) => {
@@ -113,9 +117,11 @@ const startServer = async () => {
                 ipAddresses.forEach(ip => {
                     console.log(`- http://${ip}:${PORT}`);
                 });
-                console.log('\nFRONTEND: To access from VM, set your API_URL to:');
+                console.log('\nFRONTEND ACCESS OPTIONS:');
+                console.log('1. Local mode: Just use the "Connect to Local Backend" option');
+                console.log('2. Remote mode: Use one of these IP addresses with the backend port:');
                 ipAddresses.forEach(ip => {
-                    console.log(`http://${ip}:${PORT}/api`);
+                    console.log(`   http://${ip}:${PORT}/api`);
                 });
             }
             
