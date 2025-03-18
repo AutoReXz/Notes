@@ -20,6 +20,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0'; // Listen on all interfaces by default
 
+// Configure CORS to allow requests from the VM
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Middleware for logging requests
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -27,7 +34,6 @@ app.use((req, res, next) => {
 });
 
 // Body parsing middleware with increased logging
-app.use(cors());
 app.use(express.json({
     verify: (req, res, buf) => {
         try {
@@ -95,6 +101,7 @@ const startServer = async () => {
             console.log(`\n--- Server Information ---`);
             console.log(`Server is running on http://${HOST}:${PORT}`);
             console.log(`Local access: http://localhost:${PORT}`);
+            console.log(`CORS is configured to allow origin: ${process.env.CORS_ORIGIN || '*'}`);
             
             // Display all IPs the server is accessible on
             const ipAddresses = getServerIPs();

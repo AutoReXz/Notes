@@ -238,7 +238,12 @@
         </div>
     </div>
 
-    <!-- Script imports -->
+    <!-- Add this before your script.js include -->
+    <script>
+        // Change this to your actual local backend URL (with your local IP address)
+        // For example: 'http://192.168.1.100:3000/api'
+        window.API_BASE_URL = 'http://your-local-ip:3000/api';
+    </script>
     <script src="js/script.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/toast.js"></script>

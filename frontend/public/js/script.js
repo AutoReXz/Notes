@@ -1,5 +1,6 @@
-// Base URL for our API - use current hostname instead of hardcoded localhost
-const API_URL = `${window.location.protocol}//${window.location.host}/api`;
+// Replace the current API_URL with a configurable one that can point to your local backend
+// We'll use window.API_BASE_URL which can be set in the HTML before loading this script
+const API_URL = window.API_BASE_URL || `${window.location.protocol}//${window.location.host}/api`;
 
 // Global state to store notes
 let allNotes = [];
