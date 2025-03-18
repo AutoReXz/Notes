@@ -2,11 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 import { initModels } from './models/index.js';
 import noteRoutes from './routes/noteRoutes.js';
 import migrateCategories from './utils/migrate-categories.js';
-import fs from 'fs';
 import { mysqlErrorMiddleware } from './utils/mysql-error-handler.js';
+
+// Load environment variables
+dotenv.config();
 
 // Get __dirname equivalent in ES Module
 const __filename = fileURLToPath(import.meta.url);
@@ -39,20 +42,6 @@ app.use(express.json({
     }
 }));
 
-// Check database file permissions
-const dbFilePath = path.join(__dirname, 'database.sqlite');
-try {
-    if (fs.existsSync(dbFilePath)) {
-        // Check if we can write to the database file
-        fs.accessSync(dbFilePath, fs.constants.W_OK);
-        console.log('Database file is writable');
-    } else {
-        console.log('Database file does not exist yet, will be created');
-    }
-} catch (err) {
-    console.error('Database file permission error:', err);
-}
-
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -76,15 +65,16 @@ app.use((err, req, res, next) => {
 // Start server
 const startServer = async () => {
     try {
-        // Initialize models (sync with database)
+        // Initialize models (sync with MySQL database)
         await initModels();
-        console.log('Database models initialized');
+        console.log('MySQL database models initialized');
         
         // Run migration to update notes without categories
         await migrateCategories();
         
         app.listen(PORT, () => {
             console.log(`Server is running on http://localhost:${PORT}`);
+            console.log(`Connected to MySQL database on ${process.env.DB_HOST}`);
         });
     } catch (error) {
         console.error('Unable to start the server:', error);
